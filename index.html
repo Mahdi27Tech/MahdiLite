@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MahdiLite: a small proxy server for your Android phone</title>
+<meta name="description" content="MahdiLite turns an Android phone into a forwarding proxy, like a pocket-sized Squid. Cache pages, require a password and block domains for every device on your Wi-Fi. Free.">
+<meta name="theme-color" content="#1f6b1a">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<!-- Social preview. If your repository is not named MahdiLite, change the two URLs below. -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="MahdiLite: a small proxy server for your Android phone">
+<meta property="og:description" content="A forwarding proxy with a cache, password and block list, running on your phone. Free.">
+<meta property="og:image" content="https://mahdi27tech.github.io/MahdiLite/favicon.png">
+<meta property="og:url" content="https://mahdi27tech.github.io/MahdiLite/">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#f4f7ef;
+  --surface:#ffffff;
+  --surface-2:#e9f0e1;
+  --ink:#13230f;
+  --ink-2:#44553e;
+  --line:#cfdcc3;
+  --green:#1f6b1a;
+  --green-ink:#ffffff;
+  --gold:#f5b21b;
+  --gold-ink:#2a1d00;
+  --code-bg:#13230f;
+  --code-ink:#e8f3dc;
+  --kofi:#ff5e5b;
+  --kofi-ink:#ffffff;
+  --diagram-line:#1f6b1a;
+  --focus:#0b57d0;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1a10;
+    --surface:#14261a;
+    --surface-2:#1b3322;
+    --ink:#eaf3e0;
+    --ink-2:#a7bb9d;
+    --line:#2b4632;
+    --green:#4fb43f;
+    --green-ink:#08150a;
+    --gold:#f7bd3a;
+    --gold-ink:#2a1d00;
+    --code-bg:#07110a;
+    --code-ink:#dcecd0;
+    --diagram-line:#7fd06f;
+    --focus:#8ab4f8;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1a10;
+  --surface:#14261a;
+  --surface-2:#1b3322;
+  --ink:#eaf3e0;
+  --ink-2:#a7bb9d;
+  --line:#2b4632;
+  --green:#4fb43f;
+  --green-ink:#08150a;
+  --gold:#f7bd3a;
+  --gold-ink:#2a1d00;
+  --code-bg:#07110a;
+  --code-ink:#dcecd0;
+  --diagram-line:#7fd06f;
+  --focus:#8ab4f8;
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:5rem;-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:1.0625rem;
+  line-height:1.65;
+  padding-left:env(safe-area-inset-left,0px);
+  padding-right:env(safe-area-inset-right,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+img,svg{max-width:100%;display:block}
+a{color:var(--green);text-underline-offset:.2em}
+a:hover{text-decoration-thickness:2px}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px;border-radius:4px}
+
+h1,h2,h3{
+  font-family:"Bricolage Grotesque","Figtree",system-ui,sans-serif;
+  line-height:1.1;
+  letter-spacing:-.02em;
+  margin:0;
+}
+h1{font-size:clamp(2.5rem,6.4vw,4.4rem);font-weight:800}
+h2{font-size:clamp(1.8rem,3.6vw,2.5rem);font-weight:700;margin-bottom:1rem}
+h3{font-size:1.25rem;font-weight:700;margin:2rem 0 .5rem;letter-spacing:-.01em}
+p{margin:.75rem 0}
+code,pre,kbd{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+code{font-size:.9em;background:var(--surface-2);padding:.1em .4em;border-radius:5px}
+
+.wrap{width:min(1080px,100% - 2.5rem);margin-inline:auto}
+.prose{max-width:68ch}
+
+/* Header */
+header.site{
+  position:sticky;top:0;z-index:20;
+  background:color-mix(in srgb,var(--bg) 92%,transparent);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+  padding-top:env(safe-area-inset-top,0px);
+}
+.bar{display:flex;align-items:center;gap:1rem;min-height:3.75rem;flex-wrap:wrap;padding-block:.4rem}
+.brand{display:flex;align-items:center;gap:.65rem;text-decoration:none;color:var(--ink);
+  font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:1.25rem;letter-spacing:-.02em}
+.mark{width:40px;height:40px;border-radius:10px;background:#fff;border:1px solid var(--line);padding:2px;flex:none}
+.mark img{width:100%;height:100%;object-fit:contain}
+nav.main{display:flex;gap:1.1rem;margin-left:auto;flex-wrap:wrap}
+nav.main a{color:var(--ink-2);text-decoration:none;font-weight:600;font-size:.97rem;padding:.25rem 0}
+nav.main a:hover{color:var(--ink);text-decoration:underline;text-underline-offset:.35em}
+.theme{
+  appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);
+  width:2.5rem;height:2.5rem;border-radius:50%;font-size:1.1rem;cursor:pointer;line-height:1;
+}
+.theme:hover{border-color:var(--green)}
+
+/* Buttons */
+.btn{
+  display:inline-flex;align-items:center;gap:.6rem;
+  font:inherit;font-weight:700;text-decoration:none;cursor:pointer;
+  padding:.85rem 1.4rem;border-radius:999px;border:2px solid transparent;
+  transition:transform .15s ease,box-shadow .15s ease;
+}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:var(--green);color:var(--green-ink)}
+.btn-primary:hover{box-shadow:0 6px 0 -2px color-mix(in srgb,var(--green) 45%,transparent)}
+.btn-ghost{border-color:var(--ink);color:var(--ink);background:transparent}
+.btn-ghost:hover{background:var(--surface-2)}
+.btn-kofi{background:var(--kofi);color:var(--kofi-ink)}
+.btn-kofi:hover{box-shadow:0 6px 0 -2px color-mix(in srgb,var(--kofi) 45%,transparent)}
+.btn svg{width:1.25rem;height:1.25rem;flex:none}
+
+/* Hero */
+.hero{padding-block:clamp(2.5rem,7vw,5.5rem) clamp(2.5rem,6vw,4.5rem)}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(1.5rem,4vw,3.5rem);align-items:center}
+.lede{font-size:1.2rem;color:var(--ink-2);max-width:34rem;margin:1.25rem 0 1.75rem}
+.cta{display:flex;flex-wrap:wrap;gap:.8rem}
+.fine{font-size:.95rem;color:var(--ink-2);margin-top:1rem}
+
+.diagram{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:28px;
+  padding:1rem;
+}
+.diagram svg{width:100%;height:auto}
+.d-line{stroke:var(--diagram-line);stroke-width:3;fill:none;stroke-linecap:round;stroke-dasharray:2 10}
+.d-flow{animation:flow 1.4s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-24}}
+.d-box{fill:var(--surface-2);stroke:var(--ink-2);stroke-width:2.5}
+.d-phone{fill:var(--surface);stroke:var(--ink);stroke-width:4}
+.d-text{fill:var(--ink);font-family:"Figtree",sans-serif;font-weight:700;font-size:15px}
+.d-sub{fill:var(--ink-2);font-family:"Figtree",sans-serif;font-weight:600;font-size:13px}
+.d-chip{fill:var(--code-bg)}
+.d-chip-text{fill:var(--code-ink);font-family:"JetBrains Mono",monospace;font-size:13px;font-weight:600}
+.d-gold{fill:var(--gold)}
+.d-globe{fill:none;stroke:var(--ink-2);stroke-width:2.5}
+
+/* Sections */
+section{padding-block:clamp(2.5rem,6vw,4.5rem);border-top:1px solid var(--line)}
+section .intro{color:var(--ink-2);max-width:60ch}
+
+/* Steps (a real sequence) */
+.steps{list-style:none;padding:0;margin:2rem 0 0;display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(1rem,3vw,2.5rem);counter-reset:s}
+.steps li{counter-increment:s;border-top:4px solid var(--gold);padding-top:1rem}
+.steps li::before{
+  content:counter(s);
+  display:block;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:2.6rem;line-height:1;color:var(--green);margin-bottom:.4rem
+}
+.steps h3{margin:0 0 .4rem}
+.steps p{margin:0;color:var(--ink-2)}
+
+/* Ledger of features */
+.ledger{margin:1.75rem 0 0;padding:0;border-top:2px solid var(--ink)}
+.ledger div{display:grid;grid-template-columns:minmax(10rem,.38fr) 1fr;gap:1rem 2rem;padding:1.05rem 0;border-bottom:1px solid var(--line)}
+.ledger dt{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.15rem;letter-spacing:-.01em}
+.ledger dd{margin:0;color:var(--ink-2)}
+
+/* Lists, code, callouts */
+ol.manual,ul.plain{padding-left:1.35rem;margin:.75rem 0}
+ol.manual li,ul.plain li{margin:.45rem 0;padding-left:.2rem}
+ol.manual li::marker{font-weight:700;color:var(--green)}
+pre{
+  background:var(--code-bg);color:var(--code-ink);
+  padding:1rem 1.15rem;border-radius:14px;overflow-x:auto;
+  font-size:.92rem;line-height:1.6;margin:1rem 0;max-width:100%;
+}
+pre code{background:none;padding:0;font-size:inherit;color:inherit}
+.note{
+  border-left:6px solid var(--gold);background:var(--surface);
+  padding:1rem 1.25rem;border-radius:0 14px 14px 0;margin:1.5rem 0;max-width:68ch
+}
+.note strong:first-child{font-family:"Bricolage Grotesque",sans-serif;font-size:1.1rem}
+.note p{margin:.4rem 0 0}
+
+/* Download panel */
+.dl{
+  display:grid;grid-template-columns:auto 1fr auto;gap:1.25rem;align-items:center;
+  background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:1.25rem 1.5rem;margin:1.5rem 0
+}
+.dl .mark{width:64px;height:64px;border-radius:16px}
+.dl h3{margin:0;font-size:1.3rem}
+.dl p{margin:.15rem 0 0;color:var(--ink-2);font-size:.97rem}
+.hash{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+.hash code{word-break:break-all;display:inline-block;padding:.35rem .6rem;font-size:.82rem}
+.copy{
+  font:inherit;font-weight:600;font-size:.9rem;cursor:pointer;
+  border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:.3rem .8rem;border-radius:999px
+}
+.copy:hover{border-color:var(--green)}
+
+table.perm{border-collapse:collapse;width:100%;max-width:68ch;margin:1rem 0;font-size:.98rem}
+table.perm th,table.perm td{text-align:left;padding:.6rem .5rem;border-bottom:1px solid var(--line);vertical-align:top}
+table.perm th{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;white-space:nowrap;padding-right:1.5rem}
+table.perm td{color:var(--ink-2)}
+.scroll-x{overflow-x:auto}
+
+/* FAQ */
+.faq{max-width:70ch;margin-top:1.5rem;border-top:2px solid var(--ink)}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{
+  cursor:pointer;list-style:none;padding:1rem 2.5rem 1rem 0;position:relative;
+  font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.15rem;letter-spacing:-.01em
+}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{
+  content:"+";position:absolute;right:.25rem;top:.55rem;font-size:1.6rem;font-weight:500;color:var(--green);transition:transform .2s ease
+}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq details p{margin:0 0 1.1rem;color:var(--ink-2)}
+
+/* Developer / credits */
+.credits{display:grid;grid-template-columns:repeat(2,1fr);gap:1.25rem 3rem;margin:1.5rem 0 0;max-width:46rem}
+.credits dt{font-weight:700}
+.credits dd{margin:0;color:var(--ink-2)}
+
+.support{
+  background:var(--surface);border:1px solid var(--line);border-radius:26px;
+  padding:clamp(1.25rem,3vw,2rem);display:flex;gap:1.5rem;justify-content:space-between;align-items:center;flex-wrap:wrap
+}
+.support h2{margin-bottom:.3rem}
+.support p{margin:0;color:var(--ink-2);max-width:46ch}
+
+footer.site{border-top:1px solid var(--line);padding-block:2rem 3rem;color:var(--ink-2);font-size:.95rem}
+footer.site p{max-width:75ch}
+
+@media (max-width:860px){
+  .hero-grid{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr}
+  .ledger div{grid-template-columns:1fr;gap:.2rem}
+  .dl{grid-template-columns:auto 1fr}
+  .dl .btn{grid-column:1 / -1;justify-content:center}
+  .credits{grid-template-columns:1fr}
+  nav.main{order:3;width:100%;margin-left:0;gap:1rem;overflow-x:auto;white-space:nowrap}
+  .theme{margin-left:auto}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .d-flow{animation:none}
+  .btn{transition:none}
+}
+</style>
+</head>
+
+<body id="top">
+
+<header class="site">
+  <div class="wrap bar">
+    <a class="brand" href="#top" aria-label="MahdiLite home">
+      <span class="mark"><img src="logo.png" alt="" width="40" height="40"></span>
+      MahdiLite
+    </a>
+    <nav class="main" aria-label="Page sections">
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#install">Install</a>
+      <a href="#manual">User manual</a>
+      <a href="#faq">Questions</a>
+      <a href="#developer">Developer</a>
+    </nav>
+    <button class="theme" id="theme" type="button" aria-label="Switch to dark theme" title="Switch theme">☾</button>
+  </div>
+</header>
+
+<main>
+
+<!-- HERO -->
+<div class="wrap hero">
+  <div class="hero-grid">
+    <div>
+      <h1>A proxy server that fits in your pocket.</h1>
+      <p class="lede">MahdiLite runs a forwarding proxy on your Android phone, much like Squid does on a server. Point other devices at it and their web traffic passes through your phone, with a cache, a password and a block list that you control.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="MahdiLite.apk" download>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 20h16"/></svg>
+          Download the app (APK)
+        </a>
+        <a class="btn btn-ghost" href="#manual">Read the user manual</a>
+      </div>
+      <p class="fine">Free. Android 7.0 or newer. No account, no root, no ads.</p>
+    </div>
+
+    <div class="diagram" role="img" aria-label="Diagram: a laptop and a tablet send web requests to a phone running MahdiLite, and the phone forwards them to the internet.">
+      <svg viewBox="0 0 520 380" aria-hidden="true">
+        <!-- lines first, so devices sit on top -->
+        <path class="d-line d-flow" d="M118 108 C 165 108, 170 170, 205 175"/>
+        <path class="d-line d-flow" d="M118 290 C 165 290, 170 215, 205 205"/>
+        <path class="d-line d-flow" d="M315 190 L 395 190"/>
+
+        <!-- laptop -->
+        <rect class="d-box" x="28" y="62" width="90" height="62" rx="8"/>
+        <path d="M14 134 H132 L124 124 H22 Z" fill="var(--ink-2)"/>
+        <text class="d-text" x="73" y="160" text-anchor="middle">Laptop</text>
+
+        <!-- tablet -->
+        <rect class="d-box" x="38" y="250" width="70" height="86" rx="10"/>
+        <circle cx="73" cy="324" r="3" fill="var(--ink-2)"/>
+        <text class="d-text" x="73" y="362" text-anchor="middle">Tablet</text>
+
+        <!-- phone running MahdiLite -->
+        <rect class="d-phone" x="205" y="60" width="110" height="230" rx="20"/>
+        <rect x="244" y="70" width="32" height="6" rx="3" fill="var(--ink-2)"/>
+        <rect x="217" y="92" width="86" height="86" rx="14" fill="#fff"/>
+        <image href="logo.png" x="221" y="96" width="78" height="78"/>
+        <rect x="217" y="192" width="86" height="12" rx="6" class="d-gold"/>
+        <rect x="217" y="212" width="60" height="8" rx="4" fill="var(--line)"/>
+        <rect x="217" y="228" width="72" height="8" rx="4" fill="var(--line)"/>
+        <rect x="217" y="252" width="86" height="26" rx="13" fill="var(--green)"/>
+        <text x="260" y="270" text-anchor="middle" fill="var(--green-ink)" font-family="Figtree,sans-serif" font-weight="700" font-size="13">Running</text>
+        <text class="d-text" x="260" y="318" text-anchor="middle">Your phone</text>
+
+        <!-- address chip -->
+        <rect class="d-chip" x="160" y="14" width="200" height="30" rx="15"/>
+        <text class="d-chip-text" x="260" y="34" text-anchor="middle">192.168.1.23:8080</text>
+
+        <!-- internet -->
+        <circle class="d-globe" cx="440" cy="190" r="38"/>
+        <ellipse class="d-globe" cx="440" cy="190" rx="16" ry="38"/>
+        <path class="d-globe" d="M402 190 H478 M410 168 H470 M410 212 H470"/>
+        <text class="d-text" x="440" y="252" text-anchor="middle">Websites</text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="wrap">
+    <h2>How it works</h2>
+    <p class="intro">A forwarding proxy is a middleman. Your devices ask it for a page, it fetches the page, and it hands the answer back. MahdiLite does that from your phone.</p>
+    <ol class="steps">
+      <li>
+        <h3>Start</h3>
+        <p>Choose a port, set a password if you want one, and start the proxy. A notification shows that it is running.</p>
+      </li>
+      <li>
+        <h3>Point</h3>
+        <p>On a laptop or another phone, open the Wi-Fi proxy settings and enter your phone's address and the port.</p>
+      </li>
+      <li>
+        <h3>Browse</h3>
+        <p>Pages now travel through your phone. Repeated requests can come from the cache, and blocked sites are refused.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="wrap">
+    <h2>What it does</h2>
+    <dl class="ledger">
+      <div>
+        <dt>HTTP and HTTPS</dt>
+        <dd>Handles normal web requests and HTTPS tunnels (the CONNECT method). HTTPS stays encrypted from your device to the website.</dd>
+      </div>
+      <div>
+        <dt>Response cache</dt>
+        <dd>Keeps copies of cacheable pages so a second device can get them without a second download. You can switch the cache off, check its size and clear it.</dd>
+      </div>
+      <div>
+        <dt>Password protection</dt>
+        <dd>Ask every client for a username and password (Basic proxy authentication) before it can use your phone.</dd>
+      </div>
+      <div>
+        <dt>Allowed clients</dt>
+        <dd>Limit the proxy to the devices you list, so a stranger on the same network cannot use it.</dd>
+      </div>
+      <div>
+        <dt>Blocked domains</dt>
+        <dd>Refuse requests to sites you name. Useful for ads, trackers or sites you do not want on your network.</dd>
+      </div>
+      <div>
+        <dt>Live statistics</dt>
+        <dd>See total requests, data sent and received, active connections and cache hits while the proxy runs.</dd>
+      </div>
+      <div>
+        <dt>Runs in the background</dt>
+        <dd>Works as a foreground service with a notification, so Android is less likely to stop it when you switch apps.</dd>
+      </div>
+    </dl>
+  </div>
+</section>
+
+<!-- INSTALL -->
+<section id="install">
+  <div class="wrap">
+    <h2>Install the app</h2>
+    <p class="intro">MahdiLite is installed from an APK file. Only the phone that runs the proxy needs the app. The other devices just change a Wi-Fi setting.</p>
+
+    <div class="dl">
+      <span class="mark"><img src="logo.png" alt="" width="64" height="64"></span>
+      <div>
+        <h3>MahdiLite 1.0</h3>
+        <p>Android 7.0 or newer. About 5.5 MB.</p>
+      </div>
+      <a class="btn btn-primary" href="MahdiLite.apk" download>Download the app (APK)</a>
+    </div>
+
+    <ol class="manual">
+      <li>Tap <strong>Download the app (APK)</strong> and download the file.</li>
+      <li>Open the downloaded file. If Android asks, allow your browser or Files app to install apps.</li>
+      <li>Tap <strong>Install</strong>. Because the app is not on Google Play, Android may show a warning. Continue only for a file you downloaded from this page.</li>
+      <li>Open MahdiLite. Allow notifications when asked, so the running notice can appear.</li>
+    </ol>
+
+    <h3>Check your download</h3>
+    <p>If you like to be sure, compare the file's SHA-256 checksum with this one.</p>
+    <div class="hash">
+      <code id="sha">7acca8f00f5229ee5576d94e005475daeeb6d5e2cb763b9391a2cd00d7976c5f</code>
+      <button class="copy" type="button" id="copysha">Copy</button>
+    </div>
+    <pre><code>sha256sum MahdiLite.apk</code></pre>
+
+    <h3>What the app asks for</h3>
+    <div class="scroll-x">
+    <table class="perm">
+      <tbody>
+        <tr><th scope="row">Internet</th><td>To fetch pages for your devices.</td></tr>
+        <tr><th scope="row">Network and Wi-Fi state</th><td>To find your phone's address on the network.</td></tr>
+        <tr><th scope="row">Notifications</th><td>To show that the proxy is running, and to let you stop it.</td></tr>
+        <tr><th scope="row">Foreground service</th><td>To keep the proxy alive while the screen is off.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>It does not use accounts, contacts, storage, your camera or your location.</p>
+  </div>
+</section>
+
+<!-- MANUAL -->
+<section id="manual">
+  <div class="wrap">
+    <h2>User manual</h2>
+
+    <h3>Starting the proxy</h3>
+    <ol class="manual prose">
+      <li>Open MahdiLite and choose a port between 1024 and 65535. If you are unsure, use 8080.</li>
+      <li>Optional: turn on password protection and set a username and password.</li>
+      <li>Optional: add the devices that are allowed to connect, and any domains you want blocked.</li>
+      <li>Leave the cache on to save data, or switch it off if you always want fresh pages.</li>
+      <li>Start the proxy. The notification <em>MahdiLite proxy running</em> appears. Note your phone's address on the network.</li>
+    </ol>
+
+    <h3>Connecting another device</h3>
+    <p class="prose">Your phone and the other device must be on the same Wi-Fi network. In the other device's proxy settings choose <em>manual</em>, then enter your phone's address as the host and your port.</p>
+    <ul class="plain prose">
+      <li><strong>Android:</strong> Settings, Wi-Fi, long-press your network, Modify network, Advanced options, Proxy, Manual.</li>
+      <li><strong>iPhone or iPad:</strong> Settings, Wi-Fi, the (i) beside your network, Configure Proxy, Manual.</li>
+      <li><strong>Windows:</strong> Settings, Network and internet, Proxy, Manual proxy setup, Set up.</li>
+      <li><strong>macOS:</strong> System Settings, Network, your Wi-Fi, Details, Proxies, then switch on Web proxy (HTTP) and Secure web proxy (HTTPS).</li>
+    </ul>
+    <p class="prose">If you turned on a password, your browser or device asks for the username and password the first time it uses the proxy.</p>
+
+    <h3>Testing from a computer</h3>
+    <p class="prose">A quick way to check that everything works. Replace the address, port and login with your own.</p>
+<pre><code>curl -x http://192.168.1.23:8080 http://example.com
+
+# with a password
+curl -x http://192.168.1.23:8080 --proxy-user name:password https://example.com</code></pre>
+
+    <h3>Good to know</h3>
+    <ul class="plain prose">
+      <li>Only plain HTTP pages can be cached. HTTPS goes through an encrypted tunnel that the proxy cannot read.</li>
+      <li>The statistics show requests, data up and down, active connections and cache hits. Use them to see whether the cache is helping.</li>
+      <li>Clear the cache whenever you want a clean start.</li>
+      <li>Some phones stop background apps to save battery. If the proxy keeps stopping, set MahdiLite to unrestricted battery use in Android settings.</li>
+      <li>Stop the proxy when you are done. A stopped proxy cannot be used by anyone.</li>
+    </ul>
+
+    <div class="note">
+      <strong>Keep your proxy private</strong>
+      <p>A proxy with no password lets anyone on the same network use your phone's connection. On a shared or public Wi-Fi, turn on the password and the allowed clients list first, or do not run it at all. Use MahdiLite only on networks and devices you own or are allowed to manage.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="wrap">
+    <h2>Questions</h2>
+    <div class="faq">
+      <details>
+        <summary>Is this the same as Squid?</summary>
+        <p>It follows the same idea: a forwarding proxy with a cache and access rules. MahdiLite is far smaller and made for a phone. It does not try to replace everything Squid can do on a server.</p>
+      </details>
+      <details>
+        <summary>Can MahdiLite see my HTTPS traffic?</summary>
+        <p>No. For HTTPS it opens a tunnel and passes the encrypted data through, so it cannot read pages, passwords or messages inside it. It can only see which site a device asked to reach.</p>
+      </details>
+      <details>
+        <summary>Do I need root or a VPN profile?</summary>
+        <p>No. Nothing is installed on the other devices. You only change the proxy setting for your Wi-Fi network on each one.</p>
+      </details>
+      <details>
+        <summary>The other device cannot connect. What should I check?</summary>
+        <p>Make sure both devices are on the same Wi-Fi, the proxy is running, and the address and port match exactly. If you set allowed clients, check that the device is on the list. If you set a password, check the username and password. Some public and guest networks stop devices from talking to each other, and then no proxy on that network will work.</p>
+      </details>
+      <details>
+        <summary>The proxy keeps stopping when my screen is off.</summary>
+        <p>Your phone is probably saving battery by closing background apps. Allow MahdiLite unrestricted battery use in Android settings and keep its notification visible.</p>
+      </details>
+      <details>
+        <summary>Can I use it from outside my home network?</summary>
+        <p>MahdiLite is meant for your local network. Making it reachable from the internet exposes your phone, so it is not recommended.</p>
+      </details>
+      <details>
+        <summary>Does it work on iPhone?</summary>
+        <p>The app itself is for Android. An iPhone, a computer or any other device can still use an Android phone running MahdiLite as its proxy.</p>
+      </details>
+      <details>
+        <summary>Is it free? Does it collect my data?</summary>
+        <p>It is free and needs no account. It asks only for network, Wi-Fi state and notification access.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- DEVELOPER -->
+<section id="developer">
+  <div class="wrap">
+    <h2>Developer and credits</h2>
+    <div class="prose">
+      <p><strong>Lukwago Mahdi</strong></p>
+      <p>Computer Science student at Mbarara University of Science and Technology, interested in backend development and cyber security. MahdiLite grew out of wanting a lightweight proxy that could run anywhere, using only the phone in his pocket.</p>
+      <p><a href="https://github.com/mahdi27tech/MahdiLite">Source and releases on GitHub</a></p>
+    </div>
+    <dl class="credits">
+      <div>
+        <dt>Developer</dt>
+        <dd>Lukwago Mahdi: idea, direction, testing and publishing.</dd>
+      </div>
+      <div>
+        <dt>Claude (Anthropic)</dt>
+        <dd>AI pair-programmer: architecture, code and tests, written together with the developer.</dd>
+      </div>
+      <div>
+        <dt>Fonts</dt>
+        <dd>Bricolage Grotesque, Figtree and JetBrains Mono, under the SIL Open Font License.</dd>
+      </div>
+      <div>
+        <dt>Open-source projects</dt>
+        <dd>Kotlin, Kotlin coroutines, AndroidX and Material Components.</dd>
+      </div>
+    </dl>
+  </div>
+</section>
+
+<!-- SUPPORT -->
+<section id="support">
+  <div class="wrap">
+    <div class="support">
+      <div>
+        <h2>Support the project</h2>
+        <p>MahdiLite is free. If it saved you time or data, you can support the developer on Ko-fi.</p>
+      </div>
+      <a class="btn btn-kofi" href="https://ko-fi.com/mahdi27tech" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h14v6a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V8z"/><path d="M17 9h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M7 3.5c0 1 1 1 1 2M11 3.5c0 1 1 1 1 2"/></svg>
+        Support me on Ko-fi
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>© 2026 Lukwago Mahdi. Made with Claude. MahdiLite is provided as is, without warranty. You are responsible for how you use it and for who can reach your proxy.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var root=document.documentElement, btn=document.getElementById('theme');
+  var mq=window.matchMedia('(prefers-color-scheme: dark)');
+  function current(){
+    var t=root.getAttribute('data-theme');
+    return t ? t : (mq.matches ? 'dark' : 'light');
+  }
+  function paint(){
+    var dark=current()==='dark';
+    btn.textContent=dark?'☀':'☾';
+    btn.setAttribute('aria-label',dark?'Switch to light theme':'Switch to dark theme');
+  }
+  try{
+    var saved=localStorage.getItem('mahdilite-theme');
+    if(saved==='light'||saved==='dark') root.setAttribute('data-theme',saved);
+  }catch(e){}
+  paint();
+  btn.addEventListener('click',function(){
+    var next=current()==='dark'?'light':'dark';
+    root.setAttribute('data-theme',next);
+    try{localStorage.setItem('mahdilite-theme',next);}catch(e){}
+    paint();
+  });
+  if(mq.addEventListener) mq.addEventListener('change',paint);
+
+  var copy=document.getElementById('copysha');
+  if(copy){
+    copy.addEventListener('click',function(){
+      var text=document.getElementById('sha').textContent.trim();
+      function done(){copy.textContent='Copied';setTimeout(function(){copy.textContent='Copy';},1800);}
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done,function(){});
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>
